@@ -10,6 +10,7 @@ import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import java.util.Date
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import android.text.method.ScrollingMovementMethod
@@ -17,9 +18,11 @@ import android.text.method.ScrollingMovementMethod
 class MainActivity : AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
     private var mPlayer = MediaPlayer()
+    private var mPingIntent = Intent()
+
 
     private fun log(msg: String) {
-        val timeStamp = SimpleDateFormat("dd--hh:mm:ss:SSS").format(Date())
+        val timeStamp = SimpleDateFormat("dd--HH:mm:ss:SSS").format(Date())
         logText.append("$timeStamp $msg\n")
     }
 
@@ -54,6 +57,33 @@ class MainActivity : AppCompatActivity() {
         notificationManager?.notify(notificationID, notification)
     }
 
+    private fun startPinging() {
+        log(getString(R.string.toast_ping_start))
+        showToast(getString(R.string.toast_ping_start))
+        startService(mPingIntent)
+
+    }
+
+    private fun stopPinging() {
+        log(getString(R.string.toast_ping_stop))
+        showToast(getString(R.string.toast_ping_stop))
+        stopService(mPingIntent)
+    }
+
+    private fun showToast(msg: String) {
+        val toast = Toast.makeText(this, msg, Toast.LENGTH_LONG)
+        toast.show()
+    }
+
+    private fun playAlarm() {
+        mPlayer.start()
+    }
+
+    private fun stopAlarm() {
+        mPlayer.stop()
+        mPlayer = MediaPlayer.create(this, R.raw.alarm)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -63,18 +93,14 @@ class MainActivity : AppCompatActivity() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel(getString(R.string.channel_id), "Notify Ping", "Connectivity status change")
 
-
         mPlayer = MediaPlayer.create(this, R.raw.alarm)
-        val pingServiceIntent = Intent(this, PingService::class.java)
+        mPingIntent = Intent(this, PingService::class.java)
+
         monitorSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                startService(pingServiceIntent)
-                //mPlayer.start()
-                //sendNotification()
+                startPinging()
             } else if (!isChecked) {
-                stopService(pingServiceIntent)
-                //mPlayer.stop()
-                //mPlayer = MediaPlayer.create(this, R.raw.alarm)
+                stopPinging()
             }
         }
     }

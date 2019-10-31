@@ -5,8 +5,6 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.view.View
-import android.widget.Toast
 
 class PingService : Service() {
     private var notificationManager: NotificationManager? = null
@@ -43,8 +41,6 @@ class PingService : Service() {
     }
 
     override fun onDestroy() {
-        val toast = Toast.makeText(applicationContext, "Closing Ping service", Toast.LENGTH_LONG)
-        toast.show()
         this.stopPing = true
         this.pingThread.join()
         super.onDestroy()
