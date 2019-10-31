@@ -9,14 +9,19 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import java.util.Date
 import kotlinx.android.synthetic.main.activity_main.*
-
-
+import java.text.SimpleDateFormat
+import android.text.method.ScrollingMovementMethod
 
 class MainActivity : AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
     private var mPlayer = MediaPlayer()
 
+    private fun log(msg: String) {
+        val timeStamp = SimpleDateFormat("dd--hh:mm:ss:SSS").format(Date())
+        logText.append("$timeStamp $msg\n")
+    }
 
     private fun createNotificationChannel(id: String, name: String, description: String) {
 
@@ -53,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+        logText.movementMethod = ScrollingMovementMethod()
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel(getString(R.string.channel_id), "Notify Ping", "Connectivity status change")
