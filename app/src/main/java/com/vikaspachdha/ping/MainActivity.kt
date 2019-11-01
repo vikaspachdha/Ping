@@ -1,6 +1,5 @@
 package com.vikaspachdha.ping
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -38,23 +37,6 @@ class MainActivity : AppCompatActivity() {
         channel.vibrationPattern =
             longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
         notificationManager?.createNotificationChannel(channel)
-    }
-
-    private fun sendNotification() {
-
-        val notificationID = 101
-
-        val channelID = getString(R.string.channel_id)
-
-        val notification = Notification.Builder(this,
-            channelID)
-            .setContentTitle("Example Notification")
-            .setContentText("This is an  example notification.")
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setChannelId(channelID)
-            .build()
-
-        notificationManager?.notify(notificationID, notification)
     }
 
     private fun startPinging() {
