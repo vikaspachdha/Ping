@@ -58,9 +58,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPinging() {
+        val ip = ipText.text.toString()
+        if (!isValidIP(ip)) {
+            showToast(getString(R.string.toast_invalid_ip))
+            return
+        }
         log(getString(R.string.toast_ping_start))
         showToast(getString(R.string.toast_ping_start))
-        mPingIntent.putExtra(getString(R.string.data_ip_address), ipText.text.toString())
+        mPingIntent.putExtra(getString(R.string.data_ip_address), ip)
         startService(mPingIntent)
     }
 
@@ -82,6 +87,14 @@ class MainActivity : AppCompatActivity() {
     private fun stopAlarm() {
         mPlayer.stop()
         mPlayer = MediaPlayer.create(this, R.raw.alarm)
+    }
+
+    fun isValidIP(str:String): Boolean {
+        val tokens = str.split('.')
+        if (tokens.size == 4) {
+            return !(tokens.any{(it.toInt() < 1 || it.toInt() > 255)})
+        }
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
