@@ -42,9 +42,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:digits="0123456789."
                 android:ems="10"
                 android:inputType="number"
-                android:digits="0123456789."/>
+                android:text="192.168.1.22" />
         </LinearLayout>
 
         <Switch

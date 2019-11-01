@@ -3,4 +3,5 @@
     <string name="channel_id">com.vikaspachdha.Ping.status</string>
     <string name="toast_ping_start">Pinging Start</string>
     <string name="toast_ping_stop">Pinging Stop</string>
+    <string name="data_ip_address">ipAddress</string>
 </resources>

@@ -60,8 +60,8 @@ class MainActivity : AppCompatActivity() {
     private fun startPinging() {
         log(getString(R.string.toast_ping_start))
         showToast(getString(R.string.toast_ping_start))
+        mPingIntent.putExtra(getString(R.string.data_ip_address), ipText.text.toString())
         startService(mPingIntent)
-
     }
 
     private fun stopPinging() {
