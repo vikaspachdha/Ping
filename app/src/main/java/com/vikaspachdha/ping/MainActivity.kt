@@ -13,16 +13,44 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import android.text.method.ScrollingMovementMethod
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.widget.CompoundButton
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
+
 
 class MainActivity : AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
     private var mPlayer = MediaPlayer()
     private var mPingIntent = Intent()
+    private var mServiceRunning = false
 
 
     private fun log(msg: String) {
         val timeStamp = SimpleDateFormat("dd--HH:mm:ss:SSS").format(Date())
         logText.append("$timeStamp $msg\n")
+    }
+
+    private var mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            // here you receive the response from the service
+            if (intent.action == PingService.actionPong) {
+                log("Got Pong")
+                mServiceRunning = true
+                updateServiceRunningStatus()
+            }
+        }
+    }
+
+    private var mMonitorChangedListener: CompoundButton.OnCheckedChangeListener = object : CompoundButton.OnCheckedChangeListener {
+        override fun onCheckedChanged(view: CompoundButton, isChecked: Boolean) {
+            if (isChecked) {
+                startPinging()
+            } else if (!isChecked) {
+                stopPinging()
+            }
+        }
     }
 
     private fun createNotificationChannel(id: String, name: String, description: String) {
@@ -91,12 +119,25 @@ class MainActivity : AppCompatActivity() {
         mPlayer = MediaPlayer.create(this, R.raw.alarm)
         mPingIntent = Intent(this, PingService::class.java)
 
-        monitorSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                startPinging()
-            } else if (!isChecked) {
-                stopPinging()
-            }
-        }
+        monitorSwitch.setOnCheckedChangeListener(mMonitorChangedListener)
+    }
+
+    override fun onStart() {
+        val manager = LocalBroadcastManager.getInstance(applicationContext)
+        manager.registerReceiver(mReceiver, IntentFilter(PingService.actionPong))
+        log("Sending Ping")
+        manager.sendBroadcast(Intent(PingService.actionPing))
+        super.onStart()
+    }
+
+    private fun updateServiceRunningStatus() {
+        monitorSwitch.setOnCheckedChangeListener(null)
+        monitorSwitch.isChecked = mServiceRunning
+        monitorSwitch.setOnCheckedChangeListener(mMonitorChangedListener)
+    }
+
+    override fun onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
+        super.onStop()
     }
 }
