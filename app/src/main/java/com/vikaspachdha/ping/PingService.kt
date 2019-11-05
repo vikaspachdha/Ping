@@ -9,6 +9,9 @@ import java.net.Inet4Address
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.os.Vibrator
+
+
 
 
 class PingService : Service() {
@@ -59,6 +62,9 @@ class PingService : Service() {
             synchronized(this) {
                 this.m_state = newState
             }
+            if (this.m_state == State.DISCONNECTED) {
+                goPanick()
+            }
             println("State changed $m_state")
         }
     }
@@ -98,5 +104,23 @@ class PingService : Service() {
         this.stopPing = true
         this.pingThread.join()
         super.onDestroy()
+    }
+
+    private fun showUI() {
+        val dialogIntent = Intent(this, MainActivity::class.java)
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        this.startActivity(dialogIntent)
+    }
+
+    private fun soundAlarm() {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            vibrator.vibrate(500) // for 500 ms
+        }
+    }
+
+    private fun goPanick() {
+        showUI()
+        soundAlarm()
     }
 }
