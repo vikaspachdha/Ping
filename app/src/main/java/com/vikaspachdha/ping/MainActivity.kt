@@ -16,7 +16,9 @@ import android.text.method.ScrollingMovementMethod
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.widget.CompoundButton
+import android.widget.TextView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 
 
 
@@ -110,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        loadSettings()
 
         logText.movementMethod = ScrollingMovementMethod()
 
@@ -139,5 +142,23 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        saveSettings()
+        super.onDestroy()
+    }
+
+    private fun saveSettings() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putString(getString(R.string.data_ip_address), ipText.text.toString())
+            commit()
+        }
+    }
+
+    private fun loadSettings() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        findViewById<TextView>(R.id.ipText).text = sharedPref.getString(getString(R.string.data_ip_address), "192.168.1.1")
     }
 }
