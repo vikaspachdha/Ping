@@ -8,10 +8,8 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import java.util.Date
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.SimpleDateFormat
 import android.text.method.ScrollingMovementMethod
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
@@ -27,11 +25,10 @@ class MainActivity : AppCompatActivity() {
     private var mPlayer = MediaPlayer()
     private var mPingIntent = Intent()
     private var mServiceRunning = false
-
+    private lateinit var mLogger: PingLogger
 
     private fun log(msg: String) {
-        val timeStamp = SimpleDateFormat("dd--HH:mm:ss:SSS").format(Date())
-        logText.append("$timeStamp $msg\n")
+        mLogger.addLog(msg)
     }
 
     private var mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -112,6 +109,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mLogger = PingLogger(this, resources.getInteger(R.integer.default_log_size), "logFile.txt", logText)
+
         loadSettings()
 
         logText.movementMethod = ScrollingMovementMethod()
@@ -123,11 +123,16 @@ class MainActivity : AppCompatActivity() {
         mPingIntent = Intent(this, PingService::class.java)
 
         monitorSwitch.setOnCheckedChangeListener(mMonitorChangedListener)
+
+        clearLogbtn.setOnClickListener {
+            mLogger.clear()
+        }
     }
 
     override fun onStart() {
         val manager = LocalBroadcastManager.getInstance(applicationContext)
         manager.registerReceiver(mReceiver, IntentFilter(PingService.actionPong))
+        mLogger.loadLogs()
         log("Sending Ping")
         manager.sendBroadcast(Intent(PingService.actionPing))
         super.onStart()
@@ -141,12 +146,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
-        super.onStop()
-    }
-
-    override fun onDestroy() {
         saveSettings()
-        super.onDestroy()
+        mLogger.saveLogs()
+        super.onStop()
     }
 
     private fun saveSettings() {

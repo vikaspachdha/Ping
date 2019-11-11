@@ -2,4 +2,5 @@
 <resources>
     <integer name="notification_id">500</integer>
     <integer name="panic_threshold">3</integer>
+    <integer name="default_log_size">256</integer>
 </resources>

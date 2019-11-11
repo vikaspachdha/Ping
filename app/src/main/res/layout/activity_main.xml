@@ -54,14 +54,12 @@
             android:layout_height="wrap_content"
             android:text="Monitor" />
 
-        <TextView
-            android:id="@+id/statusView"
+        <Button
+            android:id="@+id/clearLogbtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:editable="false"
-            android:gravity="center"
-            android:text="Running"
-            android:textSize="24sp" />
+            android:text="Clear Logs" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
