@@ -20,7 +20,8 @@ class PingService : Service() {
     enum class State {
         IDLE,
         CONNECTED,
-        DISCONNECTED
+        DISCONNECTED,
+        PANIC
     }
 
     companion object {
@@ -53,9 +54,9 @@ class PingService : Service() {
                 setState(State.CONNECTED)
                 mMissedCount = 0
             } else {
-                Log.d(gLogTag, "Ping failed: $mMissedCount")
                 if (++mMissedCount > resources.getInteger(R.integer.panic_threshold)) {
-                    Log.d(gLogTag, "Disconnected")
+                    setState(State.PANIC)
+                } else {
                     setState(State.DISCONNECTED)
                 }
             }
@@ -80,7 +81,7 @@ class PingService : Service() {
     private fun buildNotification(): Notification {
         var b = Notification.Builder(applicationContext, getString(R.string.channel_id))
         b.setContentTitle("Pinging $mIp")
-        b.setContentText(notificationText())
+        b.setContentText("Current state: ${mState.name}")
         b.setSmallIcon(android.R.drawable.ic_dialog_alert)
         b.setChannelId(getString(R.string.channel_id))
         return b.build()
@@ -134,18 +135,6 @@ class PingService : Service() {
     }
 
     private fun updateNotification() {
-        Log.d(gLogTag, "Updating notification")
-        val notification = buildNotification()
-        notification.flags = Notification.FLAG_ONGOING_EVENT
-        mNotificationManager?.notify(resources.getInteger(R.integer.notification_id), notification)
-    }
-
-    private fun notificationText(): String {
-        val statusStr = when (mState) {
-            State.CONNECTED -> "Connected"
-            State.DISCONNECTED -> "PANIC"
-            else -> "Idle"
-        }
-        return "Current state: $statusStr"
+        startForeground(resources.getInteger(R.integer.notification_id), buildNotification())
     }
 }
