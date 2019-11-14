@@ -2,6 +2,7 @@ package com.vikaspachdha.ping
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -84,6 +85,11 @@ class PingService : Service() {
         b.setContentText("Current state: ${mState.name}")
         b.setSmallIcon(android.R.drawable.ic_dialog_alert)
         b.setChannelId(getString(R.string.channel_id))
+
+        // Main UI pending intent
+        val mainUiIntent = Intent(this, MainActivity::class.java)
+        mainUiIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        b.setContentIntent(PendingIntent.getActivity(this, 0, mainUiIntent, 0))
         return b.build()
     }
 
