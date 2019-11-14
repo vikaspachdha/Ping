@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -22,7 +21,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MainActivity : AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
-    private var mPlayer = MediaPlayer()
     private var mPingIntent = Intent()
     private var mServiceRunning = false
     private lateinit var mLogger: PingLogger
@@ -89,14 +87,6 @@ class MainActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun playAlarm() {
-        mPlayer.start()
-    }
-
-    private fun stopAlarm() {
-        mPlayer.stop()
-        mPlayer = MediaPlayer.create(this, R.raw.alarm)
-    }
 
     fun isValidIP(str:String): Boolean {
         val tokens = str.split('.')
@@ -119,7 +109,6 @@ class MainActivity : AppCompatActivity() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel(getString(R.string.channel_id), "Notify Ping", "Connectivity status change")
 
-        mPlayer = MediaPlayer.create(this, R.raw.alarm)
         mPingIntent = Intent(this, PingService::class.java)
 
         monitorSwitch.setOnCheckedChangeListener(mMonitorChangedListener)

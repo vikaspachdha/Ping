@@ -11,6 +11,7 @@ import java.net.Inet4Address
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.media.MediaPlayer
 import android.os.Vibrator
 import android.util.Log
 
@@ -31,6 +32,7 @@ class PingService : Service() {
     }
 
     private var mNotificationManager: NotificationManager? = null
+    private var mPlayer = MediaPlayer()
     private var mState = State.IDLE
     private var mIp: String = ""
     private var mStopPing = false
@@ -72,8 +74,10 @@ class PingService : Service() {
                 this.mState = newState
             }
             Log.d(gLogTag, "State changed $mState")
-            if (this.mState == State.DISCONNECTED) {
+            if (this.mState == State.PANIC) {
                 goPanic()
+            } else {
+                stopAlarm()
             }
             updateNotification()
         }
@@ -109,6 +113,8 @@ class PingService : Service() {
         if (ip != null) {
             mIp = ip
         }
+        mPlayer = MediaPlayer.create(this, R.raw.alarm)
+        mPlayer.isLooping = true
         val notification = buildNotification()
         startForeground(resources.getInteger(R.integer.notification_id), notification)
         this.mPingThread.start()
@@ -127,11 +133,24 @@ class PingService : Service() {
         this.startActivity(dialogIntent)
     }
 
-    private fun soundAlarm() {
+//    private fun soundAlarm() {
 //        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 //        if (vibrator.hasVibrator()) {
 //            vibrator.vibrate(500) // for 500 ms
 //        }
+//    }
+
+    private fun soundAlarm() {
+        mPlayer.start()
+    }
+
+    private fun stopAlarm() {
+        if (mPlayer.isPlaying) {
+            mPlayer.stop()
+            mPlayer.release()
+            mPlayer = MediaPlayer.create(this, R.raw.alarm)
+            mPlayer.isLooping = true
+        }
     }
 
     private fun goPanic() {
