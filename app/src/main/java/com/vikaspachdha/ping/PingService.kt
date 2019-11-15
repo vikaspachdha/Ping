@@ -1,7 +1,6 @@
 package com.vikaspachdha.ping
 
 import android.app.Notification
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -14,6 +13,8 @@ import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Vibrator
 import android.util.Log
+import android.os.VibrationEffect
+
 
 const val gLogTag = "PingService"
 
@@ -31,7 +32,6 @@ class PingService : Service() {
         val actionPong = PingService::class.java.name + ".PONG"
     }
 
-    private var mNotificationManager: NotificationManager? = null
     private var mPlayer = MediaPlayer()
     private var mState = State.IDLE
     private var mIp: String = ""
@@ -76,8 +76,6 @@ class PingService : Service() {
             Log.d(gLogTag, "State changed $mState")
             if (this.mState == State.PANIC) {
                 goPanic()
-            } else {
-                stopAlarm()
             }
             updateNotification()
         }
@@ -122,6 +120,8 @@ class PingService : Service() {
     }
 
     override fun onDestroy() {
+        stopPanic()
+        mPlayer.release()
         this.mStopPing = true
         this.mPingThread.join()
         super.onDestroy()
@@ -133,19 +133,29 @@ class PingService : Service() {
         this.startActivity(dialogIntent)
     }
 
-//    private fun soundAlarm() {
-//        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//        if (vibrator.hasVibrator()) {
-//            vibrator.vibrate(500) // for 500 ms
-//        }
-//    }
-
     private fun soundAlarm() {
         mPlayer.start()
     }
 
+    private fun startHaptic() {
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            val mVibratePattern = longArrayOf(0, 1000, 1000)
+            val effect = VibrationEffect.createWaveform(mVibratePattern, 0)
+            vibrator.vibrate(effect)
+        }
+    }
+
+    private fun stopHaptic() {
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        if (vibrator.hasVibrator()) {
+            vibrator.cancel()
+        }
+    }
+
     private fun stopAlarm() {
         if (mPlayer.isPlaying) {
+            // Stop and reset media player
             mPlayer.stop()
             mPlayer.release()
             mPlayer = MediaPlayer.create(this, R.raw.alarm)
@@ -157,6 +167,12 @@ class PingService : Service() {
         Log.i(gLogTag, "Going panic")
         showUI()
         soundAlarm()
+        startHaptic()
+    }
+
+    private fun stopPanic() {
+        stopAlarm()
+        stopHaptic()
     }
 
     private fun updateNotification() {
