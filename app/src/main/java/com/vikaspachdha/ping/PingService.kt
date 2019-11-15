@@ -121,6 +121,8 @@ class PingService : Service() {
 
     override fun onDestroy() {
         stopPanic()
+        val manager = LocalBroadcastManager.getInstance(applicationContext)
+        manager.unregisterReceiver(mReceiver)
         mPlayer.release()
         this.mStopPing = true
         this.mPingThread.join()
