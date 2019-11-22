@@ -23,16 +23,15 @@ class MainActivity : AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
     private var mPingIntent = Intent()
     private var mServiceRunning = false
-    private lateinit var mLogger: PingLogger
 
     private fun log(msg: String) {
-        mLogger.addLog(msg)
+        PingLogger.addLog(msg)
     }
 
     private var mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             // here you receive the response from the service
-            if (intent.action == PingService.actionPong) {
+            if (intent.action == PingService.msgPong) {
                 log("Got Pong")
                 mServiceRunning = true
                 updateServiceRunningStatus()
@@ -100,7 +99,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mLogger = PingLogger(this, resources.getInteger(R.integer.default_log_size), "logFile.txt", logText)
+        PingLogger.LogView =  logText
+        PingLogger.LogSavePath = this.filesDir.absolutePath
 
         loadSettings()
 
@@ -114,16 +114,15 @@ class MainActivity : AppCompatActivity() {
         monitorSwitch.setOnCheckedChangeListener(mMonitorChangedListener)
 
         clearLogbtn.setOnClickListener {
-            mLogger.clear()
+            PingLogger.clear()
         }
     }
 
     override fun onStart() {
         val manager = LocalBroadcastManager.getInstance(applicationContext)
-        manager.registerReceiver(mReceiver, IntentFilter(PingService.actionPong))
-        mLogger.loadLogs()
+        manager.registerReceiver(mReceiver, IntentFilter(PingService.msgPong))
         log("Sending Ping")
-        manager.sendBroadcast(Intent(PingService.actionPing))
+        manager.sendBroadcast(Intent(PingService.msgPing))
         super.onStart()
     }
 
@@ -136,7 +135,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver)
         saveSettings()
-        mLogger.saveLogs()
+        PingLogger.saveLogs()
         super.onStop()
     }
 

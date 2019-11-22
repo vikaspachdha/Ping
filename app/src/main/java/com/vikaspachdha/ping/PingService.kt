@@ -14,9 +14,8 @@ import android.media.MediaPlayer
 import android.os.Vibrator
 import android.util.Log
 import android.os.VibrationEffect
+import java.util.logging.Logger
 
-
-const val gLogTag = "PingService"
 
 class PingService : Service() {
 
@@ -28,10 +27,11 @@ class PingService : Service() {
     }
 
     companion object {
-        val actionPing = PingService::class.java.name + ".PING"
-        val actionPong = PingService::class.java.name + ".PONG"
+        val msgPing = PingService::class.java.name + ".PING"
+        val msgPong = PingService::class.java.name + ".PONG"
     }
 
+    private val gLogTag = "PingService"
     private var mPlayer = MediaPlayer()
     private var mState = State.IDLE
     private var mIp: String = ""
@@ -41,10 +41,10 @@ class PingService : Service() {
 
     private var mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == actionPing) {
+            if (intent.action == msgPing) {
                 Log.d(gLogTag, "Received ping")
                 LocalBroadcastManager.getInstance(applicationContext)
-                    .sendBroadcast(Intent(actionPong))
+                    .sendBroadcast(Intent(msgPong))
             }
         }
     }
@@ -78,6 +78,7 @@ class PingService : Service() {
                 goPanic()
             }
             updateNotification()
+            PingLogger.addLog("State changed: ${mState.name}")
         }
     }
 
@@ -101,7 +102,7 @@ class PingService : Service() {
 
     override fun onCreate() {
         val manager = LocalBroadcastManager.getInstance(applicationContext)
-        manager.registerReceiver(mReceiver, IntentFilter(actionPing))
+        manager.registerReceiver(mReceiver, IntentFilter(msgPing))
         super.onCreate()
     }
 
@@ -126,6 +127,7 @@ class PingService : Service() {
         mPlayer.release()
         this.mStopPing = true
         this.mPingThread.join()
+        PingLogger.saveLogs()
         super.onDestroy()
     }
 
