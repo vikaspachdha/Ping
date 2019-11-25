@@ -131,7 +131,7 @@ class PingService : Service() {
 
     private fun showUI() {
         val dialogIntent = Intent(this, MainActivity::class.java)
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         this.startActivity(dialogIntent)
     }
 
